@@ -19,6 +19,6 @@ The app also makes use of other npm modules such as:
 1. mongoose: which help us to interact properly with MongoDb database
 2. joi: for data validation
 3. joi-objectid: it helps joi to validate a mongoose \_id.
-4. config: for getting environmental variables.
+4. dotenv: for getting environmental variables.
 5. express: this simplifies the creation of the Restful API
 6. nodemon: it actively monitors the app and restarts the app if there is any change in configuration, since node doesn't do this by default
