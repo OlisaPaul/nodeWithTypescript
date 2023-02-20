@@ -1,3 +1,7 @@
+const mongoose = require("mongoose");
+const admin = require("../middleware/admin");
+const auth = require("../middleware/auth");
+const validateMiddleware = require("../middleware/validate");
 const validateObjectId = require("../middleware/validateObjectId");
 const asyncMiddleware = require("../middleware/async");
 const express = require("express");
@@ -44,8 +48,8 @@ router.get(
 
 router.patch(
   "/:roomId",
+  [validateMiddleware(validatePatch), validateObjectId, auth],
   // validateObjectId is a middleware, it makes sure that the roomId parameter is of the right mongoose Id format.
-  validateObjectId,
   asyncMiddleware(async (req, res) => {
     const room = await Room.findByIdAndUpdate(
       req.params.roomId,
@@ -58,8 +62,8 @@ router.patch(
     if (!room)
       return res.status(404).send("We can't find room with the given ID");
 
-    const { error } = validatePatch(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    // const { error } = validatePatch(req.body);
+    // if (error) return res.status(400).send(error.details[0].message);
 
     res.send(room);
   })
@@ -67,17 +71,17 @@ router.patch(
 
 router.post(
   "/",
+  [validateMiddleware(validate), auth],
   asyncMiddleware(async (req, res) => {
-    // the validate function is imported from the model of this room
-    // This make sure the client sends in the right info
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    const roomType = await RoomType.findById(req.body.roomType);
+    if (!roomType)
+      return res.status(404).send("We can't find room type with the given ID");
 
     // Checks for duplicacy
-    // let room = await Room.findOne({ name: req.body.name });
-    // if (room) return res.status(400).send("Room already added");
+    let room = await Room.findOne({ name: req.body.name });
+    if (room) return res.status(400).send("Room already added");
 
-    let room = new Room({
+    room = new Room({
       name: req.body.name,
       price: req.body.price,
       roomType: req.body.roomType,
@@ -92,7 +96,7 @@ router.post(
 
 router.delete(
   "/:roomId",
-  validateObjectId,
+  [validateObjectId, auth, admin],
   asyncMiddleware(async (req, res) => {
     // used to delete the room by using the given ID
     const room = await Room.findByIdAndRemove(req.params.roomId);

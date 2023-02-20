@@ -2,9 +2,12 @@
 const express = require("express");
 const error = require("../middleware/error");
 const rooms = require("../routes/rooms");
+const auth = require("../routes/auth");
+const users = require("../routes/users");
 const roomTypes = require("../routes/rooomTypes");
 
 module.exports = function (app) {
+  app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
   // if the api is {{baseUrl}}/api/v1/rooms, it uses the rooms method in the router object
@@ -12,6 +15,9 @@ module.exports = function (app) {
 
   // if the api is {{baseUrl}}/api/v1/rooms-types, it uses the roomTypes method in the router object
   app.use("/api/v1/rooms-types", roomTypes);
+
+  app.use("/api/v1/users", users);
+  app.use("/api/v1/auth", auth);
 
   // it calls the error middleware if there was a rejected promise.
   app.use(error);
