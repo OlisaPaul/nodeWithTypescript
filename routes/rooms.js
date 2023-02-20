@@ -11,6 +11,7 @@ const { RoomType } = require("../model/roomType");
 
 router.get(
   "/",
+  auth,
   // the asyncMiddleware function is used to handle promise rejection
   asyncMiddleware(async (req, res) => {
     const query = {};
@@ -31,11 +32,11 @@ router.get(
 );
 
 router.get(
-  "/:roomId",
-  validateObjectId,
+  "/:id",
+  [validateObjectId, auth],
   asyncMiddleware(async (req, res) => {
     //to search if the room is available in the database
-    const room = await Room.findById(req.params.roomId);
+    const room = await Room.findById(req.params.id);
 
     // sends a 404 response to the client if not available
     if (!room)
@@ -47,12 +48,12 @@ router.get(
 );
 
 router.patch(
-  "/:roomId",
-  [validateMiddleware(validatePatch), validateObjectId, auth],
+  "/:id",
+  [validateMiddleware(validatePatch), validateObjectId, auth, admin],
   // validateObjectId is a middleware, it makes sure that the roomId parameter is of the right mongoose Id format.
   asyncMiddleware(async (req, res) => {
     const room = await Room.findByIdAndUpdate(
-      req.params.roomId,
+      req.params.id,
       {
         $set: req.body,
       },
@@ -71,7 +72,7 @@ router.patch(
 
 router.post(
   "/",
-  [validateMiddleware(validate), auth],
+  [validateMiddleware(validate), auth, admin],
   asyncMiddleware(async (req, res) => {
     const roomType = await RoomType.findById(req.body.roomType);
     if (!roomType)
@@ -95,11 +96,11 @@ router.post(
 );
 
 router.delete(
-  "/:roomId",
+  "/:id",
   [validateObjectId, auth, admin],
   asyncMiddleware(async (req, res) => {
     // used to delete the room by using the given ID
-    const room = await Room.findByIdAndRemove(req.params.roomId);
+    const room = await Room.findByIdAndRemove(req.params.id);
 
     if (!room)
       return res.status(404).send("We can't find room with the given ID");
