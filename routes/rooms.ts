@@ -1,30 +1,35 @@
-const mongoose = require("mongoose");
-const admin = require("../middleware/admin");
-const auth = require("../middleware/auth");
-const validateMiddleware = require("../middleware/validate");
-const validateObjectId = require("../middleware/validateObjectId");
-const asyncMiddleware = require("../middleware/async");
-const express = require("express");
+import mongoose from "mongoose";
+import admin from "../middleware/admin";
+import auth from "../middleware/auth";
+import validateMiddleware from "../middleware/validate";
+import validateObjectId from "../middleware/validateObjectId";
+import asyncMiddleware from "../middleware/async";
+import { Room, validate, validatePatch } from "../model/room";
+import { RoomType } from "../model/roomType";
+import express from "express";
 const router = express.Router();
-const { Room, validate, validatePatch } = require("../model/room");
-const { RoomType } = require("../model/roomType");
 
 router.get(
   "/",
   auth,
   // the asyncMiddleware function is used to handle promise rejection
-  asyncMiddleware(async (req, res) => {
-    const query = {};
+  asyncMiddleware(async (req: express.Request, res: express.Response) => {
+    let query = new Map();
 
-    if (req.query.search) query.name = req.query.search;
+    if (req.query.search) query.set("name", req.query.search);
 
     if (req.query.maxPrice)
-      query.price = { $gte: req.query.minPrice || 0, $lte: req.query.maxPrice };
+      query.set("price", {
+        $gte: req.query.minPrice || 0,
+        $lte: req.query.maxPrice,
+      });
 
     if (req.query.roomType) {
       const roomType = await RoomType.find({ name: req.query.roomType });
-      query.roomType = roomType[0]._id;
+      query.set("roomType", roomType[0]._id);
     }
+
+    query = Object.fromEntries(query);
 
     const rooms = await Room.find(query);
     res.send(rooms);
@@ -34,7 +39,7 @@ router.get(
 router.get(
   "/:id",
   [validateObjectId, auth],
-  asyncMiddleware(async (req, res) => {
+  asyncMiddleware(async (req: express.Request, res: express.Response) => {
     //to search if the room is available in the database
     const room = await Room.findById(req.params.id);
 
@@ -51,7 +56,7 @@ router.patch(
   "/:id",
   [validateMiddleware(validatePatch), validateObjectId, auth, admin],
   // validateObjectId is a middleware, it makes sure that the roomId parameter is of the right mongoose Id format.
-  asyncMiddleware(async (req, res) => {
+  asyncMiddleware(async (req: express.Request, res: express.Response) => {
     const room = await Room.findByIdAndUpdate(
       req.params.id,
       {
@@ -72,8 +77,10 @@ router.patch(
 
 router.post(
   "/",
-  [validateMiddleware(validate), auth, admin],
-  asyncMiddleware(async (req, res) => {
+  validateMiddleware(validate),
+  auth(),
+  admin(),
+  asyncMiddleware(async (req: express.Request, res: express.Response) => {
     const roomType = await RoomType.findById(req.body.roomType);
     if (!roomType)
       return res.status(404).send("We can't find room type with the given ID");
@@ -97,8 +104,10 @@ router.post(
 
 router.delete(
   "/:id",
-  [validateObjectId, auth, admin],
-  asyncMiddleware(async (req, res) => {
+  [validateObjectId,
+  auth(),
+  admin(),]
+  asyncMiddleware(async (req: express.Request, res: express.Response) => {
     // used to delete the room by using the given ID
     const room = await Room.findByIdAndRemove(req.params.id);
 
@@ -110,4 +119,4 @@ router.delete(
 );
 
 // Exports the router object which will  be used in the ../startup/routes.js files
-module.exports = router;
+export default router;

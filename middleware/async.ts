@@ -1,7 +1,13 @@
+import express from "express";
+
 // when the router handler function is passed as an argument to this function,
 // it helps to handle the rejected promise of the handler function
-module.exports = function (handler) {
-  return async (req, res, next) => {
+export default function asyncMiddleware(handler: any) {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
     try {
       await handler(req, res);
     } catch (ex) {
@@ -9,4 +15,4 @@ module.exports = function (handler) {
       next(ex);
     }
   };
-};
+}

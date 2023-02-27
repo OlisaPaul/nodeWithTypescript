@@ -1,11 +1,12 @@
-const validateMiddleware = require("../middleware/validate");
-const config = require("config");
-const jwt = require("jsonwebtoken");
-const Joi = require("joi");
-const bcrypt = require("bcrypt");
-const _ = require("lodash");
-const { User } = require("../model/user");
-const express = require("express");
+import validateMiddleware from "../middleware/validate";
+import config from "config";
+import jwt from "jsonwebtoken";
+import Joi from "joi";
+import bcrypt from "bcrypt";
+import _ from "lodash";
+import { User } from "../model/user";
+import express from "express";
+import Iuser from "../interface/user.inteface";
 const router = express.Router();
 
 // This is used for authenticating the user
@@ -32,7 +33,7 @@ router.get("/", async (req, res) => {
 });
 
 // for validating the body of the request
-function validate(req) {
+function validate(req: Iuser) {
   const schema = Joi.object({
     password: Joi.string().min(5).max(1024).required(),
     email: Joi.string().email().min(5).max(255).required(),
@@ -41,4 +42,4 @@ function validate(req) {
   return schema.validate(req);
 }
 
-module.exports = router;
+export default router;

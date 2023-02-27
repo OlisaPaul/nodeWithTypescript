@@ -1,12 +1,12 @@
 // This file determines which of the routes will be used based on the api url
-const express = require("express");
-const error = require("../middleware/error");
-const rooms = require("../routes/rooms");
-const auth = require("../routes/auth");
-const users = require("../routes/users");
-const roomTypes = require("../routes/rooomTypes");
+import express from "express";
+import error from "../middleware/error";
+import rooms from "../routes/rooms";
+import auth from "../routes/auth";
+import users from "../routes/users";
+import roomTypes from "../routes/rooomTypes";
 
-module.exports = function (app) {
+function route(app: any) {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
@@ -21,4 +21,6 @@ module.exports = function (app) {
 
   // it calls the error middleware if there was a rejected promise.
   app.use(error);
-};
+}
+
+export default route;

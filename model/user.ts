@@ -1,8 +1,10 @@
-const _ = require("lodash");
-const jwt = require("jsonwebtoken");
-const config = require("config");
-const mongoose = require("mongoose");
-const Joi = require("joi");
+import _ from "lodash";
+import jwt from "jsonwebtoken";
+import config from "config";
+import mongoose from "mongoose";
+import { Model, Schema, model } from "mongoose";
+import Joi from "joi";
+import Iuser from "../interface/user.inteface";
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -30,17 +32,23 @@ const userSchema = new mongoose.Schema({
   isAdmin: Boolean,
 });
 
-userSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign(
+interface UserModel extends Model<Iuser> {
+  generateAuthToken(): string;
+}
+
+type userModel = Model<Iuser, {}, UserModel>;
+
+userSchema.method("generateAuthToken", function generateAuthToken() {
+  const token: string = jwt.sign(
     { _id: this._id, isAdmin: this.isAdmin, name: this.name },
     config.get("jwtPrivateKey")
   );
   return token;
-};
+});
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<Iuser, any>("User", userSchema);
 
-function validate(user) {
+function validate(user: Iuser) {
   const schema = Joi.object({
     name: Joi.string().min(4).max(255).required(),
     password: Joi.string().min(5).max(1024).required(),
@@ -50,5 +58,4 @@ function validate(user) {
   return schema.validate(user);
 }
 
-exports.validate = validate;
-exports.User = User;
+export { validate, User };

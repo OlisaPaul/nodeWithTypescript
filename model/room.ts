@@ -1,10 +1,12 @@
 // Joi is used for data validation
-const Joi = require("joi");
-const mongoose = require("mongoose");
-const validateObjectId = require("../middleware/validateObjectId");
+import Joi from "joi";
+import mongoose, { Schema, Document } from "mongoose";
+import validateObjectId from "../middleware/validateObjectId";
+//import objectid from "joi-objectid";
+import RoomInterface from "../interface/room.interface";
 
 // The schema determines the structure of the room collection
-const roomSchema = new mongoose.Schema({
+const roomSchema: Schema = new Schema({
   name: {
     type: String,
     // required makes sure the name is provided by the client.
@@ -17,36 +19,33 @@ const roomSchema = new mongoose.Schema({
 
   roomType: {
     // this makes sure that the use provides a mongooseId.
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     required: true,
     ref: "roomType",
   },
 });
 
-const Room = mongoose.model("room", roomSchema);
+const Room = mongoose.model<RoomInterface>("room", roomSchema);
 
 //To validate the data before sending to the database
-function validate(room) {
+export function validate(room: RoomInterface) {
   const schema = Joi.object({
-    name: Joi.string().min(4).max(50).required(),
+    name: Joi.string().min(5).required(),
     price: Joi.number().min(0).max(150000).required(),
-    roomType: Joi.objectId().required(),
+    roomType: Joi.string().required(),
   });
 
   return schema.validate(room);
 }
 
-function validatePatch(room) {
+export function validatePatch(room: RoomInterface) {
   const schema = Joi.object({
     name: Joi.string().min(5),
     price: Joi.number().min(0).max(150000),
-    roomType: Joi.objectId(),
+    roomType: Joi.string(),
   });
 
   return schema.validate(room);
 }
 
-exports.validatePatch = validatePatch;
-exports.validate = validate;
-exports.Room = Room;
-exports.roomSchema = roomSchema;
+export { Room, roomSchema };
