@@ -1,7 +1,7 @@
 // Express make the server creation easier
 import express from "express";
-import route from "./src/startup/routes";
-import db from "./src/startup/database";
+import route from "./startup/routes";
+import db from "./startup/database";
 const app = express();
 
 route(app);

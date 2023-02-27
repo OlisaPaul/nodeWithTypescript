@@ -3,7 +3,6 @@
 import jwt from "jsonwebtoken";
 import config from "config";
 import express from "express";
-import Ireq from "../interface/req.interface";
 
 export default function auth(
   req: express.Request,
