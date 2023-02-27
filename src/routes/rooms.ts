@@ -7,6 +7,7 @@ import asyncMiddleware from "../middleware/async";
 import { Room, validate, validatePatch } from "../model/room";
 import { RoomType } from "../model/roomType";
 import express from "express";
+import Ireq from "../interface/req.interface";
 const router = express.Router();
 
 router.get(
@@ -78,8 +79,8 @@ router.patch(
 router.post(
   "/",
   validateMiddleware(validate),
-  auth(),
-  admin(),
+  auth,
+  admin,
   asyncMiddleware(async (req: express.Request, res: express.Response) => {
     const roomType = await RoomType.findById(req.body.roomType);
     if (!roomType)
@@ -104,10 +105,10 @@ router.post(
 
 router.delete(
   "/:id",
-  [validateObjectId,
-  auth(),
-  admin(),]
-  asyncMiddleware(async (req: express.Request, res: express.Response) => {
+  validateObjectId,
+  auth,
+  admin,
+  asyncMiddleware(async (req: Ireq, res: express.Response) => {
     // used to delete the room by using the given ID
     const room = await Room.findByIdAndRemove(req.params.id);
 
